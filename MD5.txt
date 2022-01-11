@@ -1,0 +1,311 @@
+
+function MD5(~)
+clc
+clear
+%如果输入形式如下16进制，把其转化成[,,,]形式
+% Mpre = 0x4dc968ff0ee35c209572d4777b721587d36fa7b21bdc56b74a3dc0783e7b9518afbfa202a8284bf36e8e4b55b35f427593d849676da0d1d55d8360fb5f07fea2
+%Mpre = [0x4dc968ff,0x0ee35c20,0x9572d477,0x7b721587,0xd36fa7b2,0x1bdc56b7,0x4a3dc078,0x3e7b9518,0xafbfa202,0xa8284bf3,0x6e8e4b55,0xb35f4275,0x93d84967,0x6da0d1d5,0x5d8360fb,0x5f07fea2];
+% Mpre = [0x4dc968ff,0x0ee35c20,0x9572d477,0x7b721587,0xd36fa7b2,0x1bdc56b7,0x4a3dc078,0x3e7b9518,0xafbfa200,0xa8284bf3,0x6e8e4b55,0xb35f4275,0x93d84967,0x6da0d155,0x5d8360fb,0x5f07fea2];
+%Mpre = [0x4dc968ff,0x0ee35c20,0x9572d477,0x7b721587,0xd36fa7b2,0x1bdc56b7,0x4a3dc078,0x3e7b9518,0xafbfa202,0xa8284bf3,0x6e8e4b55,0xb35f4275,0x93d84967,0x6da0d1d5,0x5d8360fb,0x5f07fea2];
+
+
+Mpre = 'a';  %以字符串形式为输入
+A = 0x67452301; %初始化ABCD
+B = 0xefcdab89;
+C = 0x98badcfe;
+D = 0x10325476;
+T = [0xD76AA478,0xE8C7B756,0x242070DB,0xC1BDCEEE,0xF57C0FAF,0x4787C62A,0xA8304613,0xFD469501,0x698098D8,0x8B44F7AF,0xFFFF5BB1,0x895CD7BE,0x6B901122,0xFD987193,0xA679438E,0x49B40821,0xF61E2562,0xC040B340,0x265E5A51,0xE9B6C7AA,0xD62F105D,0x02441453,0xD8A1E681,0xE7D3FBC8,0x21E1CDE6,0xC33707D6,0xF4D50D87,0x455A14ED,0xA9E3E905,0xFCEFA3F8,0x676F02D9,0x8D2A4C8A,0xFFFA3942,0x8771F681,0x6D9D6122,0xFDE5380C,0xA4BEEA44,0x4BDECFA9,0xF6BB4B60,0xBEBFBC70,0x289B7EC6,0xEAA127FA,0xD4EF3085,0x04881D05,0xD9D4D039,0xE6DB99E5,0x1FA27CF8,0xC4AC5665,0xF4292244,0x432AFF97,0xAB9423A7,0xFC93A039,0x655B59C3,0x8F0CCC92,0xFFEFF47D,0x85845DD1,0x6FA87E4F,0xFE2CE6E0,0xA3014314,0x4E0811A1,0xF7537E82,0xBD3AF235,0x2AD7D2BB,0xEB86D391];
+S = [7,12,17,22,7,12,17,22,7,12,17,22,7,12,17,22,5,9,14,20,5,9,14,20,5,9,14,20,5,9,14,20,4,11,16,23,4,11,16,23,4,11,16,23,4,11,16,23,6,10,15,21,6,10,15,21,6,10,15,21,6,10,15,21];
+INDEX =[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,1,6,11,0,5,10,15,4,9,14,3,8,13,2,7,12,5,8,11,14,1,4,7,10,13,0,3,6,9,12,15,2,0,7,14,5,12,3,10,1,8,15,6,13,4,11,2,9];
+[M,Mlength] = fill(Mpre);%填充Mpre
+% M = '0100000101000010010000110100010001000101010001100100011101001000010010010100101001001011010011000100110101001110010011110101000001010001010100100101001101010100010101010101011001010111010110000101100101011010011000010110001001100011011001000110010101100110011001110110100001101001011010100110101101101100011011010110111001101111011100000111000101110010011100110111010001110101011101100111011101111000011110010111101001000001010000100100001101000100010001010100011001000111010010000100100101001010010010110100110001001101010011100100111101010000010100010101001001010011010101000101010101010110010101110101100001011001010110100110000101100010011000110110010001100101011001100110011101101000011010010110101001101011011011000110110101101110011011110111000001110001011100100111001101110100011101010111011001110111011110000111100101111010100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000100000000000011000000000000000000000000000000000000000000000000'
+[A,B,C,D] = iteration(M,Mlength,A,B,C,D,INDEX,T,S);%进行迭代
+end
+
+%%
+function res = move(M,S)
+%将M循环左移S位，M是数值
+M = dec2bin(M,32);%将M转成char串
+len = size(M,2);
+M = [M(S+1:len),M(1:S)];
+res = bin2dec(M);%将M转换成数值
+end
+
+function res = fillZero(M)
+%给串前补0。例如110，补成0110
+len = size(M,2);  %M的长度
+while mod(len,4)~=0  %如果M不是4位的整数倍，则补n个0使其满足条件
+    M = ['0',M];
+    len = len+1;
+end
+res = M;
+end
+
+function res = fillEightZero(M)
+%给串前补0。例如110，补成00000110
+len = size(M,2);  %M的长度
+while mod(len,8)~=0  %如果M不是8位的整数倍，则补n个0使其满足条件
+    M = ['0',M];
+    len = len+1;
+end
+res = M;
+end
+
+%以字符串形式为输入时，用这个函数，注释另一个函数
+function res = getM(M)
+% 例如输入'jk'，如果只是dec2bin('jk') ,结果为2*7的矩阵。
+% 利用这个函数将其转化成1*16（每一行的7位补齐为8位）的数组
+M = dec2bin(M);
+sizeHeng = size(M,1); %矩阵的横维度 （2）
+sizeZong = size(M,2); %矩阵的竖维度 （7）
+S = '';  %用于记录每一行的值
+for j = 1:sizeZong  %初始化S为第一行的值
+    S1 = M(1,j);
+    S = [S,S1];
+end
+res = S;
+res = fillZero(res);  %每一行的值补齐。（例如本例补齐8位）
+for i = 2:sizeHeng  %依次将后面几行的值添加到第一行值的后面
+    S = '0';
+    for j = 1:sizeZong
+        S1 = M(i,j);
+        S = [S,S1];
+    end
+    S = fillZero(S);  %每一行补齐后再添加
+    res = [res,S];
+end
+end
+
+%以16进制为输入时，用这个函数
+% function res = getM(M)
+% M1 = dec2bin(M);
+% sizeHeng = size(M1,1); %矩阵的横维度 （2）
+% sizeZong = size(M1,2);%矩阵的竖维度 （7）
+% S = '';
+% for i = 1:sizeHeng
+%     mid = dec2bin(M(i),32);
+%     S = [S,mid];
+% end
+% res = S;
+% end
+
+
+function [res,length] = fill(M)
+% 填充M
+M = getM(M);  %将M转化成1*n的矩阵。
+len = size(M,2); %M的长度
+oriLen = len; %M消息的原始长度
+mo = mod(len,512);
+if mo~=448   %当M对512求余不等于448时，填充至满足
+    M = [M,'1'];
+    len = len+1;
+    while mod(len,512)~=448
+        M = [M,'0'];
+        len = len+1;
+    end
+else  %当M对512求余等于448，填充512位
+    M = [M,'1'];
+    i = 2;
+    while i<=512
+        M = [M,'0'];
+        i = i+1;
+    end
+    len = len+512;
+end
+res = fillLength(M,oriLen); %填充原始信息长度
+length = len+64;  %填充后信息长度
+return;
+end
+
+function res = fillLength(M,oriLen)
+%填充64位
+%M是进行第一步填充后，未进行长度填充的结果
+LenValue = oriLen; 
+oriLen = dec2bin(oriLen);
+% oriLen = fillZero(oriLen);
+oriLen = fillEightZero(oriLen);%将oriLen转换为二进制
+sizeLen = size(oriLen,2);  %oriLen的长度
+if LenValue>2^64  %原始长度大于2^64
+    oriLen = oriLen(1:64); %只取前64位
+    oriLen = reserve(oriLen,size(oriLen,2));
+    res = [M,oriLen];
+    return;
+end
+%原始长度小于2^64，后面补充0
+oriLen = reserve(oriLen,size(oriLen,2));
+oriLen = dec2bin(oriLen,sizeLen);
+oriLen = fillZero(oriLen);
+res = [M,oriLen];
+for i = 1:(64-sizeLen)
+    res = [res,'0'];
+end
+end
+
+function res = todec(M)
+%将M（字符串）转化成数值。M长度太长，不能使用bin2dec（）函数。
+len = size(M,2);
+length = len/4;%M四位是十六进制的一位
+sum = 0;
+for i=0:length-1
+    y = M(4*i+1:4*i+4); 
+    b = bin2dec(y(1))*8+bin2dec(y(2))*4+bin2dec(y(3))*2+bin2dec(y(4))*1;
+    sum = sum+b*16^(length-i-1);
+end
+res = sum;
+end
+
+function res = getX(M,i,j,INDEX)
+%M是二进制的char类型
+index = INDEX(i);%取每一步所运算的16位小段
+left = 512*j+32*index+1;  %每一段开头索引
+right = 512*j+32*index+32; %每一段结束索引
+X = M(left:right); %取小段
+res = reserve(X,32);
+end
+
+function  res = reserve(M,n)
+%将'3412='转换成'1234'
+X = '';
+i = n/8;%'34'是8个二进制位
+while i>=1
+    X1 = M((i-1)*8+1:i*8);
+    X = [X,X1];
+    i = i-1;
+end
+res = todec(X); %将小段转换成数值
+end
+
+function res = getFourByte(M)
+%省去超过32位的溢出位。因为加法会产生溢出
+%011110000111100001111000011110000(33位），转成11110000111100001111000011110000（32位）
+M = dec2bin(M,32);
+res = '';
+length = size(M,2);
+for i=length-31:length
+    res = [res,M(i)];
+end
+res = res;
+res = bin2dec(res);
+end
+
+function  [A,B,C,D] = step(M,A,B,C,D,j,i,INDEX,T,S)
+%j的索引值从0开始，i的索引值从1开始
+A = dec2bin(A,32);%由于ABCD是uint32类型的数据，将其转换成double类型
+A = bin2dec(A);
+B = dec2bin(B,32);
+B = bin2dec(B);
+C = dec2bin(C,32);
+C = bin2dec(C);
+D = dec2bin(D,32);
+D = bin2dec(D);
+f = F(B,C,D,i);%由于f是uint32类型的数据，将其转换成double类型
+f = dec2bin(f,32); 
+f = bin2dec(f); 
+A = A+f;
+resA = dec2bin(A,32);
+A = getFourByte(A);
+resA = dec2bin(A,32);
+
+k = getX(M,i,j,INDEX);
+resK = dec2bin(k,32);
+A = A+k;
+A = getFourByte(A);
+resA =  dec2bin(A,32);
+
+res = dec2bin(T(i),32);
+Ti = bin2dec(res);
+% res = dec2bin(T(i))
+A = A + Ti;
+res = dec2bin(A,32);
+A = getFourByte(A);
+res = dec2bin(A,32);
+
+A = move(A,S(i));
+res = S(i);
+res = dec2bin(A);
+
+res = dec2bin(B,32);
+A = A + B;
+res = dec2bin(A);
+A = getFourByte(A);
+res = dec2bin(A);
+res = A;
+
+A = D;
+D = C;
+C = B;
+B = res;
+end
+function res = F(B,C,D,i)
+switch(i)
+    case {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16}
+        %定义四个原始函数 F(B,C,D)=((B & C) | (~B & D))
+        andRes1 = bitand(B,C);
+        qufanRes = bitxor(B,0xFFFFFFFF);
+        andRes2 = bitand(qufanRes,D);
+        res = bitor(andRes1,andRes2);
+    case {17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32} 
+        %定义四个原始函数 G(B,C,D)=((B & D) | (C & ~D))
+        andRes1 = bitand(B,D);
+        qufanRes = bitxor(D,0xFFFFFFFF);
+        andRes2 = bitand(qufanRes,C);
+        res = bitor(andRes1,andRes2);
+    case {33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48} 
+        %定义四个原始函数 H(B,C,D)=(B^C^D)
+        res1 = bitxor(B,C);
+        res = bitxor(res1,D);
+    case {49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64}
+        %定义四个原始函数 I(B,C,D)=(C ^ (B | ~D))
+        qufanRes = bitxor(D,0xFFFFFFFF);
+        orRes = bitor(B,qufanRes);
+        res = bitxor(C,orRes);
+end
+end
+
+function [A,B,C,D] = iteration(M,Mlength,a,b,c,d,INDEX,T,S)
+A = a;
+B = b;
+C = c;
+D = d;
+    a = dec2bin(a);%由于abcd是uint32类型的数据，将其转换成double类型
+    a = bin2dec(a);
+    b = dec2bin(b);
+    b = bin2dec(b);
+    c = dec2bin(c);
+    c = bin2dec(c);
+    d = dec2bin(d);
+    d = bin2dec(d);
+iteNum = Mlength/512; %迭代次数
+for j = 0:iteNum-1
+    for i = 1:64
+        [A,B,C,D] = step(M,A,B,C,D,j,i,INDEX,T,S);
+    end
+    A = A+a;%每一个512分组处理后产生的ABCD，要分别加上原始的abcd
+    A = getFourByte(A);
+    
+    B = B+b;
+    B = getFourByte(B);
+    
+    C = C+c;
+    C = getFourByte(C);
+    
+    D = D+d;
+    D = getFourByte(D);
+    a = A;
+    b = B;
+    c = C;
+    d = D;
+end
+A = reserve(dec2bin(A,32),32);
+B = reserve(dec2bin(B,32),32);
+C = reserve(dec2bin(C,32),32);
+D = reserve(dec2bin(D,32),32);
+resA = dec2hex(A,8);
+resB = dec2hex(B,8);
+resC = dec2hex(C,8);
+resD = dec2hex(D,8);
+hash = [resA,resB,resC,resD]
+end
+
+
+
